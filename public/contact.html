@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - World of Angara</title>
+    <link rel="stylesheet" href="base.css">
+    <link rel="stylesheet" href="navigation.css">
+    <link rel="stylesheet" href="contact.css">
+    <link rel="stylesheet" href="backgrounds.css">
+</head>
+
+<body class="contact-page">
+    <div class="container">
+        <nav class="main-nav">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="explore.html">Explore</a></li>
+                <li><a href="smp.html">Anagra SMP</a></li>
+                <li><a href="hosting.html">Hosting</a></li>
+                <li><a href="network.html">Network</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+
+        <main class="contact-section">
+            <div class="contact-showcase">
+                <div class="contact-info">
+                    <h1>Contact Us</h1>
+                    <p class="main-description">Get in touch with our team for support, inquiries, or collaboration opportunities.</p>
+                </div>
+
+                <!-- Auth Forms -->
+                <div id="authForms" class="auth-forms">
+                    <!-- Login Form -->
+                    <div id="loginForm" class="auth-form">
+                        <h2>Login</h2>
+                        <input type="email" id="loginEmail" placeholder="Email" required>
+                        <div class="password-group">
+                            <div class="password-input-group">
+                                <input type="password" id="loginPassword" placeholder="Password" required>
+                                <button type="button" class="show-password-btn" onclick="togglePasswordVisibility('loginPassword', this)">👁️</button>
+                            </div>
+                        </div>
+                        <button onclick="login()" class="auth-btn">Login</button>
+                        <div class="form-footer">
+                            <a href="#" onclick="toggleForms('signup')">Create Account</a>
+                            <a href="#" onclick="toggleForms('forgot')">Forgot Password?</a>
+                        </div>
+                    </div>
+
+                    <!-- Signup Form -->
+                    <div id="signupForm" class="auth-form" style="display: none;">
+                        <h2>Create Account</h2>
+                        <input type="text" id="signupName" placeholder="Full Name" required>
+                        <input type="email" id="signupEmail" placeholder="Email" required>
+                        <div class="password-group">
+                            <div class="password-input-group">
+                                <input type="password" id="signupPassword" placeholder="Password" required>
+                                <button type="button" class="show-password-btn" onclick="togglePasswordVisibility('signupPassword', this)">👁️</button>
+                            </div>
+                        </div>
+                        <div class="password-group">
+                            <div class="password-input-group">
+                                <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+                                <button type="button" class="show-password-btn" onclick="togglePasswordVisibility('confirmPassword', this)">👁️</button>
+                            </div>
+                            <div id="passwordMatch" class="password-match-indicator"></div>
+                        </div>
+                        <button onclick="signup()" class="auth-btn">Sign Up</button>
+                        <div class="form-footer">
+                            <a href="#" onclick="toggleForms('login')">Already have an account?</a>
+                        </div>
+                    </div>
+
+                    <!-- Forgot Password Form -->
+                    <div id="forgotForm" class="auth-form" style="display: none;">
+                        <h2>Reset Password</h2>
+                        <input type="email" id="resetEmail" placeholder="Email" required>
+                        <button onclick="resetPassword()" class="auth-btn">Reset Password</button>
+                        <div class="form-footer">
+                            <a href="#" onclick="toggleForms('login')">Back to Login</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Form -->
+                <div id="contactForm" class="contact-form">
+                    <h2>Send us a Message</h2>
+                    <form onsubmit="submitContactForm(event)">
+                        <input type="text" id="contactName" placeholder="Your Name" required>
+                        <input type="email" id="contactEmail" placeholder="Your Email" required>
+                        <textarea id="contactMessage" placeholder="Your Message" required></textarea>
+                        <button type="submit" class="submit-btn">Send Message</button>
+                    </form>
+                </div>
+
+                <!-- Admin Panel -->
+                <div id="adminPanel" class="admin-panel" style="display: none;">
+                    <h2>Admin Dashboard</h2>
+                    <div class="admin-controls">
+                        <button onclick="toggleAddAdmin()" class="admin-btn">Add Admin Email</button>
+                        <button onclick="toggleSection('messages')" class="admin-btn">View Messages</button>
+                        <button onclick="toggleSection('users')" class="admin-btn">View Registered Users</button>
+                        <button onclick="logout()" class="logout-btn">Logout</button>
+                    </div>
+
+                    <div id="addAdminForm" class="add-admin-form" style="display: none;">
+                        <input type="email" id="newAdminEmail" placeholder="New Admin Email">
+                        <button onclick="addAdminEmail()" class="submit-btn">Add Admin</button>
+                    </div>
+
+                    <div id="messagesContainer" class="messages-container">
+                        <div id="messagesList" class="messages-list"></div>
+                    </div>
+
+                    <div id="usersContainer" class="registered-users-container">
+                        <div id="usersList" class="users-list"></div>
+                    </div>
+                </div>
+
+                <!-- Social Links -->
+                <div class="social-buttons">
+                    <a href="https://discord.gg/your-discord" class="social-btn discord">Join Discord</a>
+                    <a href="https://youtube.com/@your-channel" class="social-btn youtube">YouTube</a>
+                    <a href="mailto:contact@example.com" class="social-btn email">Email Us</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged,
+            sendPasswordResetEmail,
+            updateProfile
+        } from "https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js";
+    
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBH4wm3qbxnBwBCPFS9URTtTa6Rg8O5iVM",
+            authDomain: "angara-smp-loginpage.firebaseapp.com",
+            projectId: "angara-smp-loginpage",
+            storageBucket: "angara-smp-loginpage.firebasestorage.app",
+            messagingSenderId: "669178146860",
+            appId: "1:669178146860:web:f1bcad9c0853a2d3452189"
+        };
+    
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        window.auth = getAuth(app);
+        const auth = window.auth;
+    
+        window.firebaseAuth = {
+            signup: async (email, password) => {
+                return await createUserWithEmailAndPassword(auth, email, password);
+            },
+            login: async (email, password) => {
+                return await signInWithEmailAndPassword(auth, email, password);
+            },
+            logout: async () => {
+                return await signOut(auth);
+            },
+            resetPassword: async (email) => {
+                return await sendPasswordResetEmail(auth, email);
+            },
+            updateProfile: async (user, profileData) => {
+                return await updateProfile(user, profileData);
+            }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const token = await user.getIdToken();
+                localStorage.setItem('authToken', token);
+                
+                if (user.email === 'sushantbhi436@gmail.com') {
+                    document.getElementById('authForms').style.display = 'none';
+                    document.getElementById('contactForm').style.display = 'none';
+                    document.getElementById('adminPanel').style.display = 'block';
+                    await loadMessages();
+                } else {
+                    document.getElementById('authForms').style.display = 'none';
+                    document.getElementById('adminPanel').style.display = 'none';
+                    document.getElementById('contactForm').style.display = 'block';
+                }
+            } else {
+                localStorage.removeItem('authToken');
+                document.getElementById('contactForm').style.display = 'block';
+                document.getElementById('authForms').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'none';
+            }
+        });
+
+        window.loadMessages = async function() {
+            try {
+                const token = await auth.currentUser.getIdToken();
+                const response = await fetch(`${API_BASE}/api/messages`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch messages');
+                }
+                
+                const messages = await response.json();
+                const messagesList = document.getElementById('messagesList');
+                messagesList.innerHTML = '';
+                
+                messages.forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = 'message-item';
+                    messageDiv.innerHTML = `
+                        <div class="message-header">
+                            <strong>${msg.name}</strong>
+                            <span>${new Date(msg.timestamp).toLocaleString()}</span>
+                            <button onclick="deleteMessage('${msg.id}')" class="delete-btn">Delete</button>
+                        </div>
+                        <div class="message-email">${msg.email}</div>
+                        <div class="message-content">${msg.message}</div>
+                    `;
+                    messagesList.appendChild(messageDiv);
+                });
+            } catch (error) {
+                console.error('Load messages error:', error);
+                showError('Failed to load messages');
+            }
+        };
+
+        window.deleteMessage = async function(messageId) {
+            try {
+                const token = await auth.currentUser.getIdToken();
+                const response = await fetch(`${API_BASE}/api/messages/${messageId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete message');
+                }
+
+                showSuccess('Message deleted successfully');
+                await loadMessages();
+            } catch (error) {
+                console.error('Delete message error:', error);
+                showError('Failed to delete message');
+            }
+        };
+
+        window.toggleSection = function(section) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const usersContainer = document.getElementById('usersContainer');
+            const addAdminForm = document.getElementById('addAdminForm');
+            
+            messagesContainer.style.display = 'none';
+            usersContainer.style.display = 'none';
+            addAdminForm.style.display = 'none';
+            
+            const buttons = document.querySelectorAll('.admin-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            if (section === 'messages') {
+                messagesContainer.style.display = 'block';
+                event.target.classList.add('active');
+                loadMessages();
+            } else if (section === 'users') {
+                usersContainer.style.display = 'block';
+                event.target.classList.add('active');
+                loadRegisteredUsers();
+            }
+        };
+
+        window.toggleAddAdmin = function() {
+            const addAdminForm = document.getElementById('addAdminForm');
+            const messagesContainer = document.getElementById('messagesContainer');
+            const usersContainer = document.getElementById('usersContainer');
+            
+            messagesContainer.style.display = 'none';
+            usersContainer.style.display = 'none';
+            
+            addAdminForm.style.display = addAdminForm.style.display === 'none' ? 'block' : 'none';
+            
+            const buttons = document.querySelectorAll('.admin-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        };
+
+        window.addAdminEmail = async function() {
+            const newAdminEmail = document.getElementById('newAdminEmail').value;
+            if (!newAdminEmail) {
+                showError('Please enter an email address');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/admin/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({ email: newAdminEmail })
+                });
+
+                if (response.ok) {
+                    showSuccess('Admin added successfully');
+                    document.getElementById('newAdminEmail').value = '';
+                    toggleAddAdmin();
+                } else {
+                    throw new Error('Failed to add admin');
+                }
+            } catch (error) {
+                showError(error.message);
+            }
+        };
+
+        window.loadRegisteredUsers = async function() {
+            try {
+                const token = await auth.currentUser.getIdToken();
+                const response = await fetch(`${API_BASE}/api/users`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch users');
+                }
+                
+                const users = await response.json();
+                const usersList = document.getElementById('usersList');
+                usersList.innerHTML = '';
+                
+                users.forEach(user => {
+                    const userDiv = document.createElement('div');
+                    userDiv.className = 'user-item';
+                    userDiv.innerHTML = `
+                        <div class="user-info">
+                            <strong>${user.email}</strong>
+                            <span>Created: ${new Date(user.createdAt).toLocaleString()}</span>
+                            <span>Name: ${user.displayName || 'N/A'}</span>
+                        </div>
+                    `;
+                    usersList.appendChild(userDiv);
+                });
+            } catch (error) {
+                console.error('Load users error:', error);
+                showError('Failed to load registered users');
+            }
+        };
+    </script>
+
+    <script>
+        const API_BASE = 'https://paid.worldofangara.fun:19131';
+
+        function toggleForms(form) {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('forgotForm').style.display = 'none';
+            document.getElementById(`${form}Form`).style.display = 'block';
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            setTimeout(() => errorDiv.remove(), 5000);
+            const target = document.getElementById('contactForm').style.display === 'block' 
+                ? document.querySelector('.contact-info') 
+                : document.querySelector('.auth-forms');
+            target.prepend(errorDiv);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
+            setTimeout(() => successDiv.remove(), 5000);
+            const target = document.getElementById('contactForm').style.display === 'block' 
+                ? document.querySelector('.contact-info') 
+                : document.querySelector('.auth-forms');
+            target.prepend(successDiv);
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+        
+            try {
+                await window.firebaseAuth.login(email, password);
+                showSuccess('Login successful!');
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function signup() {
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!name || !email || !password || !confirmPassword) {
+                showError('Please fill in all fields');
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters long');
+                return;
+            }
+            
+            try {
+                const userCredential = await window.firebaseAuth.signup(email, password);
+                const user = userCredential.user;
+                
+                try {
+                    await window.firebaseAuth.updateProfile(user, {
+                        displayName: name
+                    });
+                    
+                    showSuccess('Account created successfully! Please login to continue.');
+                    document.getElementById('signupName').value = '';
+                    document.getElementById('signupEmail').value = '';
+                    document.getElementById('signupPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                    setTimeout(() => {
+                        toggleForms('login');
+                    }, 2000);
+                } catch (updateError) {
+                    console.error('Error updating profile:', updateError);
+                }
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function resetPassword() {
+            const email = document.getElementById('resetEmail').value;
+            
+            if (!email) {
+                showError('Please enter your email address');
+                return;
+            }
+            
+            try {
+                await window.firebaseAuth.resetPassword(email);
+                showSuccess('Password reset email sent. Please check your inbox.');
+                setTimeout(() => {
+                    toggleForms('login');
+                }, 2000);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function submitContactForm(event) {
+            if (event) event.preventDefault();
+            
+            const name = document.getElementById('contactName').value;
+            const email = document.getElementById('contactEmail').value;
+            const message = document.getElementById('contactMessage').value;
+            
+            if (!name || !email || !message) {
+                showError('Please fill in all fields');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email, message })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to send message');
+                }
+                
+                showSuccess('Message sent successfully!');
+                document.getElementById('contactName').value = '';
+                document.getElementById('contactEmail').value = '';
+                document.getElementById('contactMessage').value = '';
+            } catch (error) {
+                showError('Failed to send message. Please try again later.');
+            }
+        }
+
+        async function logout() {
+            try {
+                await window.firebaseAuth.logout();
+                showSuccess('Logged out successfully');
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        function togglePasswordVisibility(inputId, button) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.classList.add('active');
+            } else {
+                input.type = 'password';
+                button.classList.remove('active');
+            }
+        }
+
+        document.getElementById('signupPassword').addEventListener('input', checkPasswordMatch);
+        document.getElementById('confirmPassword').addEventListener('input', checkPasswordMatch);
+
+        function checkPasswordMatch() {
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const indicator = document.getElementById('passwordMatch');
+            
+            if (password && confirmPassword) {
+                if (password === confirmPassword) {
+                    indicator.textContent = 'Passwords match';
+                    indicator.className = 'password-match-indicator match';
+                } else {
+                    indicator.textContent = 'Passwords do not match';
+                    indicator.className = 'password-match-indicator mismatch';
+                }
+            } else {
+                indicator.textContent = '';
+            }
+        }
+    </script>
+</body>
+</html>
